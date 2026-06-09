@@ -46,6 +46,7 @@ The first AI implementation is deterministic and testable. It drafts proposal co
 - Create: `apps/web/package.json`
 - Create: `apps/web/src/app/layout.tsx`
 - Create: `apps/web/src/app/page.tsx`
+- Create: `apps/web/src/app/page.test.tsx`
 - Create: `apps/web/src/app/globals.css`
 - Create: `apps/web/vitest.config.ts`
 - Create: `apps/web/src/test/setup.ts`
@@ -161,6 +162,26 @@ export default function HomePage() {
     </main>
   );
 }
+```
+
+Create `apps/web/src/app/page.test.tsx`:
+
+```tsx
+import { render, screen } from "@testing-library/react";
+import HomePage from "./page";
+
+describe("HomePage", () => {
+  it("renders the Reach Consensus entry page", () => {
+    render(<HomePage />);
+
+    expect(
+      screen.getByRole("heading", { name: "Reach Consensus" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Open dashboard" }),
+    ).toHaveAttribute("href", "/dashboard");
+  });
+});
 ```
 
 Replace `apps/web/src/app/globals.css`:
