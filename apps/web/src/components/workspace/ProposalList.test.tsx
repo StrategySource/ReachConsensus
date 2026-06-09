@@ -28,4 +28,22 @@ describe("ProposalList", () => {
     expect(screen.queryByRole("link", { name: "Customer microsite" })).not.toBeInTheDocument();
     expect(screen.getByText("Publish before customer view")).toBeInTheDocument();
   });
+
+  it("uses the latest published slug instead of the mutable workspace slug", () => {
+    render(
+      <ProposalList
+        proposals={[
+          {
+            ...publishedStarterProposal,
+            slug: "updated-live-workspace-slug",
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getByRole("link", { name: "Customer microsite" })).toHaveAttribute(
+      "href",
+      "/p/acme-health-ai-ready-network",
+    );
+  });
 });

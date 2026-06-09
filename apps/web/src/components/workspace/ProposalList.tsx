@@ -5,7 +5,7 @@ export function ProposalList({ proposals }: { proposals: Proposal[] }) {
   return (
     <div className="grid gap-4">
       {proposals.map((proposal) => {
-        const hasPublishedMicrosite = proposal.publishedVersions.length > 0;
+        const latestPublishedVersion = proposal.publishedVersions.at(-1);
 
         return (
           <article key={proposal.id} className="rounded-lg border border-[#d9e0e8] bg-white p-5 shadow-sm">
@@ -28,9 +28,9 @@ export function ProposalList({ proposals }: { proposals: Proposal[] }) {
               >
                 Guided setup
               </Link>
-              {hasPublishedMicrosite ? (
+              {latestPublishedVersion ? (
                 <Link
-                  href={`/p/${proposal.slug}`}
+                  href={`/p/${latestPublishedVersion.snapshot.slug}`}
                   className="rounded-md border border-[#c8d9ee] bg-[#f7f9fc] px-3 py-2 font-bold text-[#0b66c3]"
                 >
                   Customer microsite
