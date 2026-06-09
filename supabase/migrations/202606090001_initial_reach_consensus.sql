@@ -179,11 +179,116 @@ as $$
   limit 1;
 $$;
 
+create or replace function private.is_internal_proposal_member(proposal_uuid uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1
+    from public.proposal_members pm
+    where pm.proposal_id = proposal_uuid
+      and pm.profile_id = (select auth.uid())
+      and pm.role in (
+        'workspace_owner',
+        'cisco_contributor',
+        'partner_contributor',
+        'admin'
+      )
+  );
+$$;
+
+create or replace function private.can_read_proposal_profile(profile_uuid uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1
+    from public.proposal_members viewer_pm
+    join public.proposal_members target_pm
+      on target_pm.proposal_id = viewer_pm.proposal_id
+    where viewer_pm.profile_id = (select auth.uid())
+      and viewer_pm.role in (
+        'workspace_owner',
+        'cisco_contributor',
+        'partner_contributor',
+        'admin'
+      )
+      and target_pm.profile_id = profile_uuid
+  );
+$$;
+
+create or replace function private.can_read_proposal_organization(organization_uuid uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1
+    from public.proposal_members viewer_pm
+    join public.proposal_members target_pm
+      on target_pm.proposal_id = viewer_pm.proposal_id
+    join public.profiles target_profile
+      on target_profile.id = target_pm.profile_id
+    where viewer_pm.profile_id = (select auth.uid())
+      and viewer_pm.role in (
+        'workspace_owner',
+        'cisco_contributor',
+        'partner_contributor',
+        'admin'
+      )
+      and target_profile.organization_id = organization_uuid
+  );
+$$;
+
+create or replace function private.is_comment_target_in_proposal(
+  proposal_uuid uuid,
+  section_uuid uuid,
+  block_uuid uuid
+)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1
+    from public.proposal_sections ps
+    where ps.id = section_uuid
+      and ps.proposal_id = proposal_uuid
+      and (
+        block_uuid is null
+        or exists (
+          select 1
+          from public.content_blocks cb
+          where cb.id = block_uuid
+            and cb.section_id = section_uuid
+        )
+      )
+  );
+$$;
+
 revoke execute on function private.is_proposal_member(uuid) from public;
 revoke execute on function private.proposal_role_for(uuid) from public;
+revoke execute on function private.is_internal_proposal_member(uuid) from public;
+revoke execute on function private.can_read_proposal_profile(uuid) from public;
+revoke execute on function private.can_read_proposal_organization(uuid) from public;
+revoke execute on function private.is_comment_target_in_proposal(uuid, uuid, uuid) from public;
 grant usage on schema private to authenticated;
 grant execute on function private.is_proposal_member(uuid) to authenticated;
 grant execute on function private.proposal_role_for(uuid) to authenticated;
+grant execute on function private.is_internal_proposal_member(uuid) to authenticated;
+grant execute on function private.can_read_proposal_profile(uuid) to authenticated;
+grant execute on function private.can_read_proposal_organization(uuid) to authenticated;
+grant execute on function private.is_comment_target_in_proposal(uuid, uuid, uuid) to authenticated;
 
 revoke all on table public.organizations from anon, authenticated;
 revoke all on table public.profiles from anon, authenticated;
@@ -214,8 +319,7 @@ grant select, insert, update, delete on table public.proposal_members to authent
 grant select, insert, update, delete on table public.proposal_sections to authenticated;
 grant select, insert, update, delete on table public.content_blocks to authenticated;
 grant select, insert, update, delete on table public.proposal_assets to authenticated;
-grant select, insert, delete on table public.published_versions to authenticated;
-grant update (version_number, snapshot, published_at) on table public.published_versions to authenticated;
+grant select, insert on table public.published_versions to authenticated;
 grant select, insert on table public.proposal_comments to authenticated;
 grant select, insert, update, delete on table public.change_requests to authenticated;
 grant select, insert on table public.analytics_events to authenticated;
@@ -224,6 +328,11 @@ create policy "users can read their own profile"
 on public.profiles for select
 to authenticated
 using (id = (select auth.uid()));
+
+create policy "internal collaborators can read proposal profiles"
+on public.profiles for select
+to authenticated
+using (private.can_read_proposal_profile(id));
 
 create policy "users can read their own organization"
 on public.organizations for select
@@ -236,6 +345,11 @@ using (
       and p.id = (select auth.uid())
   )
 );
+
+create policy "internal collaborators can read proposal organizations"
+on public.organizations for select
+to authenticated
+using (private.can_read_proposal_organization(id));
 
 create policy "authenticated users can create owned proposals"
 on public.proposals for insert
@@ -296,10 +410,10 @@ on public.proposal_members for delete
 to authenticated
 using (private.proposal_role_for(proposal_id) in ('workspace_owner', 'admin'));
 
-create policy "members can read proposal sections"
+create policy "internal members can read proposal sections"
 on public.proposal_sections for select
 to authenticated
-using (private.is_proposal_member(proposal_id));
+using (private.is_internal_proposal_member(proposal_id));
 
 create policy "contributors can insert proposal sections"
 on public.proposal_sections for insert
@@ -345,7 +459,7 @@ using (
   )
 );
 
-create policy "members can read content blocks"
+create policy "internal members can read content blocks"
 on public.content_blocks for select
 to authenticated
 using (
@@ -353,7 +467,7 @@ using (
     select 1
     from public.proposal_sections ps
     where ps.id = content_blocks.section_id
-      and private.is_proposal_member(ps.proposal_id)
+      and private.is_internal_proposal_member(ps.proposal_id)
   )
 );
 
@@ -421,10 +535,17 @@ using (
   )
 );
 
-create policy "members can read proposal assets"
+create policy "internal members and customers can read allowed proposal assets"
 on public.proposal_assets for select
 to authenticated
-using (private.is_proposal_member(proposal_id));
+using (
+  private.is_internal_proposal_member(proposal_id)
+  or (
+    private.proposal_role_for(proposal_id) = 'customer_commenter'
+    and visibility = 'published_asset'
+    and customer_download_enabled
+  )
+);
 
 create policy "contributors can insert proposal assets"
 on public.proposal_assets for insert
@@ -483,23 +604,6 @@ with check (
   and published_by = (select auth.uid())
 );
 
-create policy "owners and admins can update published versions"
-on public.published_versions for update
-to authenticated
-using (
-  private.proposal_role_for(proposal_id) in ('workspace_owner', 'admin')
-  and published_by = (select auth.uid())
-)
-with check (
-  private.proposal_role_for(proposal_id) in ('workspace_owner', 'admin')
-  and published_by = (select auth.uid())
-);
-
-create policy "owners and admins can delete published versions"
-on public.published_versions for delete
-to authenticated
-using (private.proposal_role_for(proposal_id) in ('workspace_owner', 'admin'));
-
 create policy "members can read proposal comments"
 on public.proposal_comments for select
 to authenticated
@@ -511,27 +615,17 @@ to authenticated
 with check (
   private.is_proposal_member(proposal_id)
   and author_profile_id = (select auth.uid())
-  and exists (
-    select 1
-    from public.proposal_sections ps
-    where ps.id = proposal_comments.section_id
-      and ps.proposal_id = proposal_comments.proposal_id
-  )
-  and (
-    block_id is null
-    or exists (
-      select 1
-      from public.content_blocks cb
-      where cb.id = proposal_comments.block_id
-        and cb.section_id = proposal_comments.section_id
-    )
+  and private.is_comment_target_in_proposal(
+    proposal_id,
+    section_id,
+    block_id
   )
 );
 
-create policy "members can read change requests"
+create policy "internal members can read change requests"
 on public.change_requests for select
 to authenticated
-using (private.is_proposal_member(proposal_id));
+using (private.is_internal_proposal_member(proposal_id));
 
 create policy "contributors can insert change requests"
 on public.change_requests for insert
@@ -589,10 +683,10 @@ using (
   )
 );
 
-create policy "members can read analytics events"
+create policy "internal members can read analytics events"
 on public.analytics_events for select
 to authenticated
-using (private.is_proposal_member(proposal_id));
+using (private.is_internal_proposal_member(proposal_id));
 
 create policy "members can create analytics events"
 on public.analytics_events for insert
@@ -608,6 +702,7 @@ with check (
 create index profiles_organization_id_idx on public.profiles(organization_id);
 create index proposals_owner_profile_id_idx on public.proposals(owner_profile_id);
 create index proposal_members_profile_id_idx on public.proposal_members(profile_id);
+create index proposal_members_profile_role_proposal_idx on public.proposal_members(profile_id, role, proposal_id);
 create index proposal_sections_proposal_id_sort_order_idx on public.proposal_sections(proposal_id, sort_order);
 create index proposal_sections_slug_idx on public.proposal_sections(slug);
 create index content_blocks_section_id_sort_order_idx on public.content_blocks(section_id, sort_order);
