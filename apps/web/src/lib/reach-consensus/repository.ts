@@ -1,4 +1,5 @@
 import { starterProposal } from "./fixtures";
+import { publishableSections } from "./publish-service";
 import type { AnalyticsEvent, ChangeRequest, Proposal, ProposalComment, PublishedProposalVersion } from "./types";
 
 export type ProposalRepository = {
@@ -41,8 +42,7 @@ export function createFixtureRepository(initialProposal: Proposal = starterPropo
         throw new Error(`Proposal not found: ${proposalId}`);
       }
 
-      const publishableSections = proposal.sections
-        .filter((section) => section.status === "approved" || section.status === "published")
+      const publishedSections = publishableSections(proposal.sections)
         .map((section) => clone({ ...section, status: "published" as const }));
 
       const version: PublishedProposalVersion = {
@@ -51,11 +51,11 @@ export function createFixtureRepository(initialProposal: Proposal = starterPropo
         versionNumber: proposal.publishedVersions.length + 1,
         publishedAt: new Date().toISOString(),
         publishedBy,
-        sections: publishableSections,
+        sections: publishedSections,
       };
 
       proposal.sections = proposal.sections.map((section) =>
-        publishableSections.some((published) => published.id === section.id)
+        publishedSections.some((published) => published.id === section.id)
           ? { ...section, status: "published" }
           : section,
       );
