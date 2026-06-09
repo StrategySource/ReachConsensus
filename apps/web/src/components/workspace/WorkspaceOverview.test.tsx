@@ -15,6 +15,6 @@ describe("WorkspaceOverview", () => {
     expect(screen.getByText(/one cisco story/i)).toBeInTheDocument();
     expect(screen.getByText(/3 sections/i)).toBeInTheDocument();
     expect(screen.getByText(/2 assets/i)).toBeInTheDocument();
-    expect(screen.getByText(/needs review/i)).toBeInTheDocument();
+    expect(screen.getByText(/^1 needs review$/i)).toBeInTheDocument();
   });
 });
