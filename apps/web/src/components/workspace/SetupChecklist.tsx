@@ -1,10 +1,6 @@
 import type { Proposal } from "@/lib/reach-consensus/types";
 
 export function SetupChecklist({ proposal }: { proposal: Proposal }) {
-  const invitedOrganizations = Array.from(
-    new Set(proposal.members.map((member) => member.organization)),
-  );
-
   return (
     <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
       <section className="rounded-lg border border-[#d9e0e8] bg-white p-6">
@@ -43,10 +39,12 @@ export function SetupChecklist({ proposal }: { proposal: Proposal }) {
       <aside className="rounded-lg border border-[#d9e0e8] bg-white p-6">
         <h2 className="text-lg font-bold">Invited parties</h2>
         <div className="mt-4 grid gap-3">
-          {invitedOrganizations.map((organization) => (
-            <div key={organization} className="rounded-lg bg-[#f7f9fc] p-3">
-              <strong className="block">{organization}</strong>
-              <span className="text-sm text-[#657180]">Invited</span>
+          {proposal.members.map((member) => (
+            <div key={member.id} className="rounded-lg bg-[#f7f9fc] p-3">
+              <strong className="block">{member.name}</strong>
+              <span className="text-sm text-[#657180]">
+                {member.organization}
+              </span>
             </div>
           ))}
         </div>
