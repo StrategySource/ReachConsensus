@@ -33,8 +33,8 @@ create table public.organizations (
 
 create table public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
-  organization_id uuid not null references public.organizations(id),
-  display_name text,
+  organization_id uuid not null references public.organizations(id) on delete cascade,
+  display_name text not null,
   created_at timestamptz not null default now()
 );
 
@@ -122,7 +122,7 @@ create table public.change_requests (
   body text not null,
   owner_name text not null,
   status public.change_request_status not null default 'open',
-  due_date date,
+  due_date date not null,
   created_at timestamptz not null default now()
 );
 
@@ -214,7 +214,7 @@ grant select, insert, update, delete on table public.proposal_members to authent
 grant select, insert, update, delete on table public.proposal_sections to authenticated;
 grant select, insert, update, delete on table public.content_blocks to authenticated;
 grant select, insert, update, delete on table public.proposal_assets to authenticated;
-grant select, insert on table public.published_versions to authenticated;
+grant select, insert, update, delete on table public.published_versions to authenticated;
 grant select, insert on table public.proposal_comments to authenticated;
 grant select, insert, update, delete on table public.change_requests to authenticated;
 grant select, insert on table public.analytics_events to authenticated;
@@ -478,6 +478,17 @@ create policy "owners and admins can create published versions"
 on public.published_versions for insert
 to authenticated
 with check (private.proposal_role_for(proposal_id) in ('workspace_owner', 'admin'));
+
+create policy "owners and admins can update published versions"
+on public.published_versions for update
+to authenticated
+using (private.proposal_role_for(proposal_id) in ('workspace_owner', 'admin'))
+with check (private.proposal_role_for(proposal_id) in ('workspace_owner', 'admin'));
+
+create policy "owners and admins can delete published versions"
+on public.published_versions for delete
+to authenticated
+using (private.proposal_role_for(proposal_id) in ('workspace_owner', 'admin'));
 
 create policy "members can read proposal comments"
 on public.proposal_comments for select
