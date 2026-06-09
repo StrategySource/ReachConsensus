@@ -1408,6 +1408,7 @@ git commit -m "feat: add customer proposal microsite"
 - Create: `apps/web/src/lib/reach-consensus/feedback-service.test.ts`
 - Create: `apps/web/src/components/workspace/FeedbackPanel.tsx`
 - Create: `apps/web/src/components/workspace/FeedbackPanel.test.tsx`
+- Modify: `apps/web/src/lib/reach-consensus/fixtures.ts`
 
 - [ ] **Step 1: Write failing feedback service test**
 
@@ -1475,6 +1476,15 @@ describe("FeedbackPanel", () => {
     render(<FeedbackPanel proposal={proposal} />);
 
     expect(screen.getAllByText("Please clarify services ownership.")).toHaveLength(2);
+    expect(screen.getByText("Clarify customer feedback")).toBeInTheDocument();
+  });
+
+  it("shows seeded starter proposal feedback", () => {
+    render(<FeedbackPanel proposal={starterProposal} />);
+
+    expect(
+      screen.getAllByText("Please clarify which team owns advanced configuration."),
+    ).toHaveLength(2);
     expect(screen.getByText("Clarify customer feedback")).toBeInTheDocument();
   });
 });
@@ -1589,7 +1599,35 @@ export default async function ProposalWorkspacePage({ params }: { params: Promis
 }
 ```
 
-- [ ] **Step 7: Run tests and build**
+- [ ] **Step 7: Seed starter proposal feedback**
+
+Update `apps/web/src/lib/reach-consensus/fixtures.ts` so `starterProposal` includes a realistic customer comment and matching change request tied to `section_services`:
+
+```ts
+comments: [
+  {
+    id: "comment_services_owner",
+    sectionId: "section_services",
+    authorName: "Riley Chen",
+    authorRole: "customer_commenter",
+    body: "Please clarify which team owns advanced configuration.",
+    createdAt: "2026-06-09T12:00:00.000Z",
+  },
+],
+changeRequests: [
+  {
+    id: "cr_comment_services_owner",
+    sectionId: "section_services",
+    title: "Clarify customer feedback",
+    body: "Please clarify which team owns advanced configuration.",
+    ownerName: "Jordan Lee",
+    status: "open",
+    dueDate: "2026-06-15",
+  },
+],
+```
+
+- [ ] **Step 8: Run tests and build**
 
 Run:
 
@@ -1601,12 +1639,12 @@ npm run build
 
 Expected: tests and build pass.
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 9: Commit**
 
 Run:
 
 ```bash
-git add apps/web/src/lib/reach-consensus/feedback-service.ts apps/web/src/lib/reach-consensus/feedback-service.test.ts apps/web/src/components/workspace/FeedbackPanel.tsx apps/web/src/components/workspace/FeedbackPanel.test.tsx apps/web/src/app
+git add apps/web/src/lib/reach-consensus/feedback-service.ts apps/web/src/lib/reach-consensus/feedback-service.test.ts apps/web/src/lib/reach-consensus/fixtures.ts apps/web/src/components/workspace/FeedbackPanel.tsx apps/web/src/components/workspace/FeedbackPanel.test.tsx apps/web/src/app
 git commit -m "feat: add customer feedback tracking"
 ```
 

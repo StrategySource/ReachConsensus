@@ -35,4 +35,13 @@ describe("FeedbackPanel", () => {
     expect(screen.getAllByText("Please clarify services ownership.")).toHaveLength(2);
     expect(screen.getByText("Clarify customer feedback")).toBeInTheDocument();
   });
+
+  it("shows seeded starter proposal feedback", () => {
+    render(<FeedbackPanel proposal={starterProposal} />);
+
+    expect(
+      screen.getAllByText("Please clarify which team owns advanced configuration."),
+    ).toHaveLength(2);
+    expect(screen.getByText("Clarify customer feedback")).toBeInTheDocument();
+  });
 });

@@ -86,8 +86,27 @@ export const starterProposal: Proposal = {
       ],
     },
   ],
-  comments: [],
-  changeRequests: [],
+  comments: [
+    {
+      id: "comment_services_owner",
+      sectionId: "section_services",
+      authorName: "Riley Chen",
+      authorRole: "customer_commenter",
+      body: "Please clarify which team owns advanced configuration.",
+      createdAt: "2026-06-09T12:00:00.000Z",
+    },
+  ],
+  changeRequests: [
+    {
+      id: "cr_comment_services_owner",
+      sectionId: "section_services",
+      title: "Clarify customer feedback",
+      body: "Please clarify which team owns advanced configuration.",
+      ownerName: "Jordan Lee",
+      status: "open",
+      dueDate: "2026-06-15",
+    },
+  ],
   analyticsEvents: [],
   publishedVersions: [],
 };
