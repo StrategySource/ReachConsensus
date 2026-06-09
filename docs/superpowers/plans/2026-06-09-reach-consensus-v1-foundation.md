@@ -1272,9 +1272,9 @@ describe("MicrositeView", () => {
 
     render(<MicrositeView proposal={publishedProposal} />);
 
-    expect(screen.getByText("Executive Summary")).toBeInTheDocument();
-    expect(screen.getByText("Platform Story")).toBeInTheDocument();
-    expect(screen.queryByText("Services")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Executive Summary" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Platform Story" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Services" })).not.toBeInTheDocument();
     expect(screen.getByText(/compounding platform value/i)).toBeInTheDocument();
   });
 });
