@@ -1275,7 +1275,9 @@ describe("MicrositeView", () => {
     expect(screen.getByRole("heading", { name: "Executive Summary" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Platform Story" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Services" })).not.toBeInTheDocument();
-    expect(screen.getByText(/compounding platform value/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /compounding platform value/i }),
+    ).toBeInTheDocument();
   });
 });
 ```
