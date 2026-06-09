@@ -95,13 +95,22 @@ export type AnalyticsEvent = {
   occurredAt: string;
 };
 
+export type PublishedProposalSnapshot = {
+  id: string;
+  slug: string;
+  customerName: string;
+  title: string;
+  oneCiscoStory: string;
+  sections: ProposalSection[];
+};
+
 export type PublishedProposalVersion = {
   id: string;
   proposalId: string;
   versionNumber: number;
   publishedAt: string;
   publishedBy: string;
-  sections: ProposalSection[];
+  snapshot: PublishedProposalSnapshot;
 };
 
 export type Proposal = {

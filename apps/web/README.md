@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Reach Consensus Web App
 
-## Getting Started
+Reach Consensus is a Next.js app for building Cisco proposal workspaces and publishing immutable customer microsites. The current app runs against fixture-backed repository data in `src/lib/reach-consensus`.
 
-First, run the development server:
+## Setup
+
+Install dependencies from `apps/web`:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+PATH=/private/tmp/codex-node/bin:/private/tmp/codex-npm-bin:$PATH /private/tmp/codex-node/bin/npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Start the local app:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+PATH=/private/tmp/codex-node/bin:/private/tmp/codex-npm-bin:$PATH /private/tmp/codex-node/bin/npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Open `http://localhost:3000`.
 
-## Learn More
+## Route Map
 
-To learn more about Next.js, take a look at the following resources:
+- `/` - Reach Consensus entry page.
+- `/dashboard` - internal proposal list with workspace, guided setup, and customer microsite links.
+- `/proposals/[proposalId]` - internal proposal workspace with overview, feedback, and activity.
+- `/proposals/[proposalId]/setup` - guided setup checklist for customer-facing sections and invited parties.
+- `/p/[slug]` - customer microsite rendered from the latest published snapshot only.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Test And Build
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Run app tests:
 
-## Deploy on Vercel
+```bash
+PATH=/private/tmp/codex-node/bin:/private/tmp/codex-npm-bin:$PATH /private/tmp/codex-node/bin/npm run test
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Build the Next.js app:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+PATH=/private/tmp/codex-node/bin:/private/tmp/codex-npm-bin:$PATH /private/tmp/codex-node/bin/npm run build
+```
+
+## Supabase Validation Note
+
+The Supabase migration lives outside the app surface in `../../supabase/migrations`. App tests and the Next.js build do not validate that SQL migration. Validate the migration separately with the Supabase CLI or `psql` against a local database when those tools and a reachable local Supabase/Postgres environment are available.

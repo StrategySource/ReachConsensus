@@ -1,7 +1,7 @@
-import type { Proposal } from "@/lib/reach-consensus/types";
+import type { PublishedProposalSnapshot } from "@/lib/reach-consensus/types";
 import { visibleSectionsForCustomer } from "@/lib/reach-consensus/types";
 
-export function MicrositeView({ proposal }: { proposal: Proposal }) {
+export function MicrositeView({ proposal }: { proposal: PublishedProposalSnapshot }) {
   const sections = visibleSectionsForCustomer(proposal.sections);
 
   return (
