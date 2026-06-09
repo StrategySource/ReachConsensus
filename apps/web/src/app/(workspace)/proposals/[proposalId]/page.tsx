@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { ActivityTimeline } from "@/components/workspace/ActivityTimeline";
 import { AppFrame } from "@/components/workspace/AppFrame";
 import { FeedbackPanel } from "@/components/workspace/FeedbackPanel";
 import { WorkspaceOverview } from "@/components/workspace/WorkspaceOverview";
@@ -21,6 +22,7 @@ export default async function ProposalWorkspacePage({
       <div className="grid gap-6">
         <WorkspaceOverview proposal={proposal} />
         <FeedbackPanel proposal={proposal} />
+        <ActivityTimeline events={proposal.analyticsEvents} />
       </div>
     </AppFrame>
   );
