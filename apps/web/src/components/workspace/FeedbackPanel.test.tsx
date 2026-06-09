@@ -32,7 +32,7 @@ describe("FeedbackPanel", () => {
 
     render(<FeedbackPanel proposal={proposal} />);
 
-    expect(screen.getByText("Please clarify services ownership.")).toBeInTheDocument();
+    expect(screen.getAllByText("Please clarify services ownership.")).toHaveLength(2);
     expect(screen.getByText("Clarify customer feedback")).toBeInTheDocument();
   });
 });
