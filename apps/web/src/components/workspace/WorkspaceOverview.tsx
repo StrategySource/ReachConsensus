@@ -1,4 +1,5 @@
 import type { Proposal } from "@/lib/reach-consensus/types";
+import { PublishStatusPanel } from "./PublishStatusPanel";
 
 export function WorkspaceOverview({ proposal }: { proposal: Proposal }) {
   const needsReview = proposal.sections.filter((section) => section.status === "needs_review").length;
@@ -21,6 +22,7 @@ export function WorkspaceOverview({ proposal }: { proposal: Proposal }) {
           </span>
         </div>
       </div>
+      <PublishStatusPanel proposal={proposal} />
       <div className="grid gap-3 md:grid-cols-3">
         {proposal.sections.map((section) => (
           <article key={section.id} className="rounded-lg border border-[#d9e0e8] bg-white p-4">
