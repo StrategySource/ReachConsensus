@@ -1,4 +1,4 @@
-import { starterProposal } from "./fixtures";
+import { publishedStarterProposal, starterProposal } from "./fixtures";
 import { publishableSections } from "./publish-service";
 import type {
   AnalyticsEvent,
@@ -128,4 +128,4 @@ export function createFixtureRepository(initialProposal: Proposal = starterPropo
   };
 }
 
-export const proposalRepository = createFixtureRepository();
+export const proposalRepository = createFixtureRepository(publishedStarterProposal);

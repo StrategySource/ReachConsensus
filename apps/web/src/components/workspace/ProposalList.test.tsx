@@ -1,11 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { starterProposal } from "@/lib/reach-consensus/fixtures";
+import { publishedStarterProposal, starterProposal } from "@/lib/reach-consensus/fixtures";
 import { ProposalList } from "./ProposalList";
 
 describe("ProposalList", () => {
   it("links each proposal to workspace, guided setup, and customer microsite routes", () => {
-    render(<ProposalList proposals={[starterProposal]} />);
+    render(<ProposalList proposals={[publishedStarterProposal]} />);
 
     expect(
       screen.getByRole("link", {
@@ -20,5 +20,12 @@ describe("ProposalList", () => {
       "href",
       "/p/acme-health-ai-ready-network",
     );
+  });
+
+  it("does not link unpublished proposals to a customer route", () => {
+    render(<ProposalList proposals={[starterProposal]} />);
+
+    expect(screen.queryByRole("link", { name: "Customer microsite" })).not.toBeInTheDocument();
+    expect(screen.getByText("Publish before customer view")).toBeInTheDocument();
   });
 });

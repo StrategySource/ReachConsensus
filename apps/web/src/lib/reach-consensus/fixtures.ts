@@ -127,3 +127,33 @@ export const starterProposal: Proposal = {
   ],
   publishedVersions: [],
 };
+
+export const publishedStarterProposal: Proposal = {
+  ...starterProposal,
+  publishedVersions: [
+    {
+      id: "version_1",
+      proposalId: starterProposal.id,
+      versionNumber: 1,
+      publishedAt: "2026-06-09T12:10:00.000Z",
+      publishedBy: "Dana Roberts",
+      snapshot: {
+        id: starterProposal.id,
+        slug: starterProposal.slug,
+        customerName: starterProposal.customerName,
+        title: starterProposal.title,
+        oneCiscoStory: starterProposal.oneCiscoStory,
+        sections: starterProposal.sections
+          .filter((section) => section.status === "approved")
+          .map((section) => ({
+            ...section,
+            status: "published",
+            blocks: section.blocks.map((block) => ({
+              ...block,
+              sourceAssetIds: [...block.sourceAssetIds],
+            })),
+          })),
+      },
+    },
+  ],
+};
