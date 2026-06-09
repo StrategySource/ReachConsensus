@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { AppFrame } from "@/components/workspace/AppFrame";
+import { FeedbackPanel } from "@/components/workspace/FeedbackPanel";
 import { WorkspaceOverview } from "@/components/workspace/WorkspaceOverview";
 import { proposalRepository } from "@/lib/reach-consensus/repository";
 
@@ -17,7 +18,10 @@ export default async function ProposalWorkspacePage({
 
   return (
     <AppFrame>
-      <WorkspaceOverview proposal={proposal} />
+      <div className="grid gap-6">
+        <WorkspaceOverview proposal={proposal} />
+        <FeedbackPanel proposal={proposal} />
+      </div>
     </AppFrame>
   );
 }
