@@ -43,7 +43,7 @@ export function createFixtureRepository(initialProposal: Proposal = starterPropo
 
       const publishableSections = proposal.sections
         .filter((section) => section.status === "approved" || section.status === "published")
-        .map((section) => ({ ...section, status: "published" as const }));
+        .map((section) => clone({ ...section, status: "published" as const }));
 
       const version: PublishedProposalVersion = {
         id: `version_${proposal.publishedVersions.length + 1}`,
@@ -70,7 +70,7 @@ export function createFixtureRepository(initialProposal: Proposal = starterPropo
       }
       proposal.comments.push(comment);
       proposals.set(proposalId, clone(proposal));
-      return structuredClone(comment);
+      return clone(comment);
     },
     async addChangeRequest(proposalId, request) {
       const proposal = proposals.get(proposalId);
@@ -79,7 +79,7 @@ export function createFixtureRepository(initialProposal: Proposal = starterPropo
       }
       proposal.changeRequests.push(request);
       proposals.set(proposalId, clone(proposal));
-      return structuredClone(request);
+      return clone(request);
     },
     async recordAnalyticsEvent(event) {
       const proposal = proposals.get(event.proposalId);
@@ -88,7 +88,7 @@ export function createFixtureRepository(initialProposal: Proposal = starterPropo
       }
       proposal.analyticsEvents.push(event);
       proposals.set(event.proposalId, clone(proposal));
-      return structuredClone(event);
+      return clone(event);
     },
   };
 }
