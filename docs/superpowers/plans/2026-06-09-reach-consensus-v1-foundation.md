@@ -1657,6 +1657,7 @@ git commit -m "feat: add customer feedback tracking"
 - Create: `apps/web/src/lib/reach-consensus/analytics-service.test.ts`
 - Create: `apps/web/src/components/workspace/ActivityTimeline.tsx`
 - Create: `apps/web/src/components/workspace/ActivityTimeline.test.tsx`
+- Update: `apps/web/src/lib/reach-consensus/fixtures.ts`
 
 - [ ] **Step 1: Write failing analytics service test**
 
@@ -1775,13 +1776,38 @@ export function ActivityTimeline({ events }: { events: AnalyticsEvent[] }) {
           <div key={event.id} className="rounded-lg bg-[#f7f9fc] p-4">
             <strong>{event.actorName}</strong>
             <p className="mt-1 text-sm text-[#657180]">{event.label}</p>
-            <p className="mt-2 text-xs font-bold uppercase tracking-wide text-[#0b66c3]">{event.type.replace("_", " ")}</p>
+            <p className="mt-2 text-xs font-bold uppercase tracking-wide text-[#0b66c3]">{event.type.replaceAll("_", " ")}</p>
           </div>
         ))}
       </div>
     </section>
   );
 }
+```
+
+- [ ] **Step 5a: Seed fixture engagement events**
+
+Update `apps/web/src/lib/reach-consensus/fixtures.ts` so `starterProposal.analyticsEvents` contains realistic customer engagement activity:
+
+```ts
+analyticsEvents: [
+  {
+    id: "event_exec_view",
+    proposalId: "proposal_acme",
+    actorName: "Riley Chen",
+    type: "section_viewed",
+    label: "Viewed Executive Summary",
+    occurredAt: "2026-06-09T12:05:00.000Z",
+  },
+  {
+    id: "event_bom_download",
+    proposalId: "proposal_acme",
+    actorName: "Riley Chen",
+    type: "file_downloaded",
+    label: "Downloaded Approved bill of materials.xlsx",
+    occurredAt: "2026-06-09T12:08:00.000Z",
+  },
+],
 ```
 
 - [ ] **Step 6: Add `ActivityTimeline` to workspace page**

@@ -107,6 +107,23 @@ export const starterProposal: Proposal = {
       dueDate: "2026-06-15",
     },
   ],
-  analyticsEvents: [],
+  analyticsEvents: [
+    {
+      id: "event_exec_view",
+      proposalId: "proposal_acme",
+      actorName: "Riley Chen",
+      type: "section_viewed",
+      label: "Viewed Executive Summary",
+      occurredAt: "2026-06-09T12:05:00.000Z",
+    },
+    {
+      id: "event_bom_download",
+      proposalId: "proposal_acme",
+      actorName: "Riley Chen",
+      type: "file_downloaded",
+      label: "Downloaded Approved bill of materials.xlsx",
+      occurredAt: "2026-06-09T12:08:00.000Z",
+    },
+  ],
   publishedVersions: [],
 };

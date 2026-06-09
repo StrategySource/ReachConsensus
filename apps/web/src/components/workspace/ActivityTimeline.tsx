@@ -10,7 +10,7 @@ export function ActivityTimeline({ events }: { events: AnalyticsEvent[] }) {
             <strong>{event.actorName}</strong>
             <p className="mt-1 text-sm text-[#657180]">{event.label}</p>
             <p className="mt-2 text-xs font-bold uppercase tracking-wide text-[#0b66c3]">
-              {event.type.replace("_", " ")}
+              {event.type.replaceAll("_", " ")}
             </p>
           </div>
         ))}
