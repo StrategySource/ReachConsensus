@@ -13,9 +13,18 @@ import {
   type LocalDraftProposal,
   type SolutionArea,
 } from "@/lib/reach-consensus/local-drafts";
+import {
+  proposalDraftFormDataFromIntake,
+  type DraftFileUpload,
+  type SharedDraftCreateResult,
+} from "@/lib/reach-consensus/shared-drafts";
+
+export type ProposalDraftCreatedResult =
+  | { kind: "local"; draft: LocalDraftProposal; workspaceUrl: string; previewUrl: string }
+  | SharedDraftCreateResult;
 
 type NewProposalWizardProps = {
-  onDraftCreated?: (draft: LocalDraftProposal) => void;
+  onDraftCreated?: (result: ProposalDraftCreatedResult) => void;
 };
 
 const documentInputs: {
@@ -74,7 +83,9 @@ export function NewProposalWizard({ onDraftCreated }: NewProposalWizardProps) {
     draftSectionOptions.map((section) => section.id),
   );
   const [documents, setDocuments] = useState<LocalDraftDocument[]>([]);
-  const [createdDraft, setCreatedDraft] = useState<LocalDraftProposal | undefined>();
+  const [files, setFiles] = useState<DraftFileUpload[]>([]);
+  const [createdDraft, setCreatedDraft] = useState<ProposalDraftCreatedResult | undefined>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const selectedAreaLabels = useMemo(
     () =>
@@ -103,15 +114,21 @@ export function NewProposalWizard({ onDraftCreated }: NewProposalWizardProps) {
       return;
     }
 
+    const selectedFiles = Array.from(files);
     setDocuments((current) => [
       ...current,
-      ...documentMetadataFromFiles(category, Array.from(files)),
+      ...documentMetadataFromFiles(category, selectedFiles),
+    ]);
+    setFiles((current) => [
+      ...current,
+      ...selectedFiles.map((file) => ({
+        category,
+        file,
+      })),
     ]);
   }
 
-  function createDraft(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
+  function createLocalDraft() {
     const draft = buildLocalDraft({
       customerName,
       title,
@@ -124,8 +141,53 @@ export function NewProposalWizard({ onDraftCreated }: NewProposalWizardProps) {
     });
 
     saveLocalDraft(draft);
-    setCreatedDraft(draft);
-    onDraftCreated?.(draft);
+    return {
+      kind: "local" as const,
+      draft,
+      workspaceUrl: `/proposals/local/${draft.id}`,
+      previewUrl: `/draft/${draft.id}`,
+    };
+  }
+
+  async function createSharedDraft() {
+    const response = await fetch("/api/proposal-drafts", {
+      method: "POST",
+      body: proposalDraftFormDataFromIntake(
+        {
+          customerName,
+          title,
+          problem,
+          solution,
+          solutionAreas,
+          selectedSectionIds,
+          members,
+        },
+        files,
+      ),
+    });
+
+    if (!response.ok) {
+      throw new Error("Shared proposal persistence is unavailable.");
+    }
+
+    return (await response.json()) as SharedDraftCreateResult;
+  }
+
+  async function createDraft(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const result = await createSharedDraft();
+      setCreatedDraft(result);
+      onDraftCreated?.(result);
+    } catch {
+      const result = createLocalDraft();
+      setCreatedDraft(result);
+      onDraftCreated?.(result);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -137,8 +199,8 @@ export function NewProposalWizard({ onDraftCreated }: NewProposalWizardProps) {
         <h1 className="mt-2 text-3xl font-bold">Create a proposal site</h1>
         <p className="mt-3 max-w-3xl text-sm leading-6 text-[#657180]">
           Capture the customer context, One Cisco platform story, selected proposal sections,
-          and source documents. This creates a browser-local draft workspace that can be
-          connected to Supabase storage next.
+          and source documents. When Supabase is configured, files are uploaded into a
+          shared draft workspace; otherwise the draft stays local to this browser.
         </p>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -297,13 +359,16 @@ export function NewProposalWizard({ onDraftCreated }: NewProposalWizardProps) {
           ) : null}
           <button
             type="submit"
+            disabled={isSubmitting}
             className="mt-5 min-h-11 w-full rounded-md bg-[#0b66c3] px-4 py-2 text-sm font-extrabold text-white"
           >
-            Create proposal draft
+            {isSubmitting ? "Creating draft..." : "Create proposal draft"}
           </button>
           {createdDraft ? (
             <p className="mt-3 text-sm font-bold text-[#2f8f46]">
-              Draft created for {createdDraft.customerName}.
+              {createdDraft.kind === "shared"
+                ? `Shared draft created for ${createdDraft.draft.customerName}.`
+                : `Local draft created for ${createdDraft.draft.customerName}.`}
             </p>
           ) : null}
         </section>
