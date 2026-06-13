@@ -14,12 +14,13 @@ export function AppFrame({ children }: { children: React.ReactNode }) {
             <span>Reach Consensus</span>
           </Link>
           <nav
-            aria-label="Workspace navigation"
-            className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-semibold text-[#657180]"
-          >
-            <Link href="/dashboard">Dashboard</Link>
-            <span>Internal workspace</span>
-          </nav>
+          aria-label="Workspace navigation"
+          className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-semibold text-[#657180]"
+        >
+          <Link href="/dashboard">Dashboard</Link>
+          <Link href="/proposals/new">New proposal</Link>
+          <span>Internal workspace</span>
+        </nav>
         </div>
       </header>
       <main className="mx-auto max-w-7xl px-6 py-6">{children}</main>
