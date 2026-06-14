@@ -7,7 +7,7 @@ describe("shared draft reader", () => {
     vi.unstubAllEnvs();
   });
 
-  it("reads a shared proposal draft through the Supabase Edge Function bridge", async () => {
+  it("reads a shared proposal draft through the Supabase Edge Function bridge with a scoped access token", async () => {
     vi.stubEnv("SUPABASE_URL", "https://reach-consensus.supabase.co");
     vi.stubEnv("SUPABASE_ANON_KEY", "anon-key");
     vi.stubEnv("SUPABASE_SECRET_KEY", "");
@@ -34,15 +34,39 @@ describe("shared draft reader", () => {
       ),
     );
 
-    const draft = await readConfiguredSharedDraft("shared-123");
+    const draft = await readConfiguredSharedDraft(
+      "shared-123",
+      "owner-token",
+      "workspace:read",
+    );
 
     expect(draft?.customerName).toBe("Northwind Clinics");
     expect(fetchSpy).toHaveBeenCalledWith(
-      "https://reach-consensus.supabase.co/functions/v1/proposal-drafts?draftId=shared-123",
+      "https://reach-consensus.supabase.co/functions/v1/proposal-drafts?draftId=shared-123&access=owner-token&capability=workspace%3Aread",
       expect.objectContaining({ cache: "no-store" }),
     );
     const headers = new Headers(fetchSpy.mock.calls[0]?.[1]?.headers);
     expect(headers.get("authorization")).toBe("Bearer anon-key");
     expect(headers.get("apikey")).toBe("anon-key");
+  });
+
+  it("does not return a draft when the Edge Function rejects the access token", async () => {
+    vi.stubEnv("SUPABASE_URL", "https://reach-consensus.supabase.co");
+    vi.stubEnv("SUPABASE_ANON_KEY", "anon-key");
+    vi.stubEnv("SUPABASE_SECRET_KEY", "");
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+      new Response(JSON.stringify({ error: "Access denied." }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    const draft = await readConfiguredSharedDraft(
+      "shared-123",
+      "wrong-token",
+      "preview:read",
+    );
+
+    expect(draft).toBeUndefined();
   });
 });

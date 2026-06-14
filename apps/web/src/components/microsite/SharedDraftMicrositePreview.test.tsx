@@ -23,6 +23,14 @@ const sharedDraft: SharedDraftProposal = {
   ],
   members: [],
   documents: [],
+  currentAccess: {
+    token: "customer-token",
+    role: "customer",
+    label: "Customer preview",
+    capabilities: ["preview:read", "comment:create"],
+    previewUrl:
+      "/draft/shared/5d4d6d1b-5f66-4e9d-8ffc-a25592f54a8e?access=customer-token",
+  },
   createdAt: "2026-06-13T16:00:00.000Z",
   updatedAt: "2026-06-13T16:00:00.000Z",
 };
@@ -36,9 +44,7 @@ describe("SharedDraftMicrositePreview", () => {
         name: "Northwind Clinics: AI Secure Access Platform",
       }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Back to workspace" })).toHaveAttribute(
-      "href",
-      `/proposals/shared/${sharedDraft.id}`,
-    );
+    expect(screen.getByText("Customer preview")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Back to workspace" })).not.toBeInTheDocument();
   });
 });

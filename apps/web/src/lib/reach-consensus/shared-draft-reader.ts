@@ -1,4 +1,8 @@
-import { readSharedDraft, type SharedDraftProposal } from "./shared-drafts";
+import {
+  readSharedDraftWithAccess,
+  type SharedDraftCapability,
+  type SharedDraftProposal,
+} from "./shared-drafts";
 import {
   getSupabaseServiceClient,
   readSupabaseDraftFunctionConfig,
@@ -8,9 +12,16 @@ import { SupabaseSharedDraftStore } from "./supabase-shared-draft-store";
 
 async function readSharedDraftFromFunction(
   draftId: string,
+  accessToken: string,
+  capability: SharedDraftCapability,
   config: SupabaseDraftFunctionConfig,
 ) {
-  const response = await fetch(`${config.url}?draftId=${encodeURIComponent(draftId)}`, {
+  const params = new URLSearchParams({
+    draftId,
+    access: accessToken,
+    capability,
+  });
+  const response = await fetch(`${config.url}?${params.toString()}`, {
     headers: {
       authorization: `Bearer ${config.apiKey}`,
       apikey: config.apiKey,
@@ -22,6 +33,10 @@ async function readSharedDraftFromFunction(
     return undefined;
   }
 
+  if (response.status === 403) {
+    return undefined;
+  }
+
   if (!response.ok) {
     throw new Error("Unable to read shared proposal draft.");
   }
@@ -29,11 +44,24 @@ async function readSharedDraftFromFunction(
   return ((await response.json()) as { draft: SharedDraftProposal }).draft;
 }
 
-export async function readConfiguredSharedDraft(draftId: string) {
+export async function readConfiguredSharedDraft(
+  draftId: string,
+  accessToken: string | undefined,
+  capability: SharedDraftCapability,
+) {
+  if (!accessToken) {
+    return undefined;
+  }
+
   const supabase = getSupabaseServiceClient();
 
   if (supabase) {
-    return readSharedDraft(draftId, new SupabaseSharedDraftStore(supabase));
+    return readSharedDraftWithAccess(
+      draftId,
+      accessToken,
+      capability,
+      new SupabaseSharedDraftStore(supabase),
+    );
   }
 
   const draftFunction = readSupabaseDraftFunctionConfig();
@@ -42,5 +70,5 @@ export async function readConfiguredSharedDraft(draftId: string) {
     return undefined;
   }
 
-  return readSharedDraftFromFunction(draftId, draftFunction);
+  return readSharedDraftFromFunction(draftId, accessToken, capability, draftFunction);
 }

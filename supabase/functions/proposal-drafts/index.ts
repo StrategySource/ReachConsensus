@@ -46,6 +46,32 @@ type DraftSection = {
   status: "draft";
 };
 
+type SharedDraftAccessRole = "owner" | "cisco" | "partner" | "customer";
+
+type SharedDraftCapability =
+  | "workspace:read"
+  | "workspace:write"
+  | "preview:read"
+  | "comment:create";
+
+type SharedDraftAccessDefinition = {
+  role: SharedDraftAccessRole;
+  label: string;
+  capabilities: SharedDraftCapability[];
+  route: "workspace" | "preview";
+};
+
+type SharedDraftAccessTokenRow = {
+  id: string;
+  draft_id: string;
+  token_hash: string;
+  role: SharedDraftAccessRole;
+  label: string;
+  capabilities: SharedDraftCapability[];
+  created_at: string;
+  last_used_at: string | null;
+};
+
 const draftSectionOptions: DraftSection[] = [
   {
     id: "executive-summary",
@@ -124,10 +150,32 @@ const solutionAreaLabels: Record<SolutionArea, string> = {
   services: "services",
 };
 
+const sharedDraftCapabilities: SharedDraftCapability[] = [
+  "workspace:read",
+  "workspace:write",
+  "preview:read",
+  "comment:create",
+];
+
+const defaultAccessDefinitions: SharedDraftAccessDefinition[] = [
+  {
+    role: "owner",
+    label: "Cisco workspace",
+    capabilities: ["workspace:read", "workspace:write", "preview:read"],
+    route: "workspace",
+  },
+  {
+    role: "customer",
+    label: "Customer preview",
+    capabilities: ["preview:read", "comment:create"],
+    route: "preview",
+  },
+];
+
 const corsHeaders = {
   "access-control-allow-origin": "https://reach-consensus.vercel.app",
   "access-control-allow-headers": "authorization, apikey, content-type",
-  "access-control-allow-methods": "POST, OPTIONS",
+  "access-control-allow-methods": "GET, POST, OPTIONS",
 };
 
 function jsonResponse(body: unknown, status = 200) {
@@ -203,7 +251,69 @@ function storagePathFor(draftId: string, category: DraftDocumentCategory, docume
   return `${draftId}/${category}/${documentId}-${name}`;
 }
 
-function mapStoredDraft(draft: Record<string, unknown>, documents: Record<string, unknown>[]) {
+function randomAccessToken() {
+  const bytes = new Uint8Array(24);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function hashAccessToken(token: string) {
+  const data = new TextEncoder().encode(token);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function workspaceUrlFor(draftId: string, token: string) {
+  return `/proposals/shared/${draftId}?access=${encodeURIComponent(token)}`;
+}
+
+function previewUrlFor(draftId: string, token: string) {
+  return `/draft/shared/${draftId}?access=${encodeURIComponent(token)}`;
+}
+
+function accessLinkFor(draftId: string, definition: SharedDraftAccessDefinition, token: string) {
+  return {
+    role: definition.role,
+    label: definition.label,
+    capabilities: definition.capabilities,
+    url: definition.route === "workspace"
+      ? workspaceUrlFor(draftId, token)
+      : previewUrlFor(draftId, token),
+  };
+}
+
+function currentAccessFor(
+  draftId: string,
+  definition: Pick<SharedDraftAccessDefinition, "role" | "label" | "capabilities">,
+  token: string,
+) {
+  const workspaceUrl = definition.capabilities.includes("workspace:read")
+    ? workspaceUrlFor(draftId, token)
+    : undefined;
+  const previewUrl = definition.capabilities.includes("preview:read")
+    ? previewUrlFor(draftId, token)
+    : undefined;
+
+  return {
+    role: definition.role,
+    label: definition.label,
+    capabilities: definition.capabilities,
+    url: workspaceUrl ?? previewUrl ?? `/draft/shared/${draftId}`,
+    token,
+    workspaceUrl,
+    previewUrl,
+  };
+}
+
+function isSharedDraftCapability(value: string | null): value is SharedDraftCapability {
+  return sharedDraftCapabilities.includes(value as SharedDraftCapability);
+}
+
+function mapStoredDraft(
+  draft: Record<string, unknown>,
+  documents: Record<string, unknown>[],
+  currentAccess?: ReturnType<typeof currentAccessFor>,
+) {
   return {
     id: draft.id,
     slug: draft.slug,
@@ -227,6 +337,7 @@ function mapStoredDraft(draft: Record<string, unknown>, documents: Record<string
       customerDownloadEnabled: document.customer_download_enabled,
       uploadStatus: document.storage_path ? "uploaded" : "metadata_only",
     })),
+    currentAccess,
     createdAt: draft.created_at,
     updatedAt: draft.updated_at,
   };
@@ -252,10 +363,42 @@ Deno.serve(async (request) => {
   });
 
   if (request.method === "GET") {
-    const draftId = new URL(request.url).searchParams.get("draftId");
+    const params = new URL(request.url).searchParams;
+    const draftId = params.get("draftId");
+    const accessToken = params.get("access");
+    const capability = params.get("capability");
 
     if (!draftId) {
       return jsonResponse({ error: "Draft ID is required." }, 400);
+    }
+
+    if (!accessToken || !isSharedDraftCapability(capability)) {
+      return jsonResponse({ error: "Access denied." }, 403);
+    }
+
+    const tokenHash = await hashAccessToken(accessToken);
+    const { data: accessRow, error: accessError } = await supabase
+      .from("proposal_intake_access_tokens")
+      .select("*")
+      .eq("draft_id", draftId)
+      .eq("token_hash", tokenHash)
+      .maybeSingle<SharedDraftAccessTokenRow>();
+
+    if (accessError) {
+      return jsonResponse({ error: accessError.message }, 500);
+    }
+
+    if (!accessRow || !accessRow.capabilities.includes(capability)) {
+      return jsonResponse({ error: "Access denied." }, 403);
+    }
+
+    const { error: usedError } = await supabase
+      .from("proposal_intake_access_tokens")
+      .update({ last_used_at: new Date().toISOString() })
+      .eq("id", accessRow.id);
+
+    if (usedError) {
+      return jsonResponse({ error: usedError.message }, 500);
     }
 
     const { data: draft, error: draftError } = await supabase
@@ -282,7 +425,13 @@ Deno.serve(async (request) => {
       return jsonResponse({ error: documentsError.message }, 500);
     }
 
-    return jsonResponse({ draft: mapStoredDraft(draft, documents ?? []) });
+    return jsonResponse({
+      draft: mapStoredDraft(
+        draft,
+        documents ?? [],
+        currentAccessFor(draftId, accessRow, accessToken),
+      ),
+    });
   }
 
   if (request.method !== "POST") {
@@ -327,7 +476,31 @@ Deno.serve(async (request) => {
     return jsonResponse({ error: draftError.message }, 500);
   }
 
-  const documentRows = [];
+  const accessTokens = defaultAccessDefinitions.map((definition) => ({
+    definition,
+    token: randomAccessToken(),
+  }));
+  const accessRows = await Promise.all(
+    accessTokens.map(async ({ definition, token }) => ({
+      id: `access_${definition.role}_${draftId}`,
+      draft_id: draftId,
+      token_hash: await hashAccessToken(token),
+      role: definition.role,
+      label: definition.label,
+      capabilities: definition.capabilities,
+      created_at: now.toISOString(),
+      last_used_at: null,
+    })),
+  );
+  const { error: accessError } = await supabase
+    .from("proposal_intake_access_tokens")
+    .insert(accessRows);
+
+  if (accessError) {
+    return jsonResponse({ error: accessError.message }, 500);
+  }
+
+  const documentRows: Record<string, unknown>[] = [];
   for (const [index, file] of files.entries()) {
     const category = categories[index];
     if (!category) {
@@ -371,37 +544,24 @@ Deno.serve(async (request) => {
     }
   }
 
+  const accessLinks = accessTokens.map(({ definition, token }) =>
+    accessLinkFor(draftId, definition, token)
+  );
+  const ownerAccess = accessTokens.find((accessToken) => accessToken.definition.role === "owner");
+
   return jsonResponse(
     {
       kind: "shared",
-      draft: {
-        id: draftRow.id,
-        slug: draftRow.slug,
-        customerName: draftRow.customer_name,
-        title: draftRow.title,
-        problem: draftRow.problem,
-        solution: draftRow.solution,
-        solutionAreas: draftRow.solution_areas,
-        oneCiscoStory: draftRow.one_cisco_story,
-        sections: draftRow.sections,
-        members: draftRow.members,
-        documents: documentRows.map((document) => ({
-          id: document.id,
-          category: document.category,
-          name: document.name,
-          fileType: document.file_type,
-          size: document.size,
-          addedAt: document.created_at,
-          storagePath: document.storage_path,
-          digestStatus: document.digest_status,
-          customerDownloadEnabled: document.customer_download_enabled,
-          uploadStatus: "uploaded",
-        })),
-        createdAt: draftRow.created_at,
-        updatedAt: draftRow.updated_at,
-      },
-      workspaceUrl: `/proposals/shared/${draftRow.id}`,
-      previewUrl: `/draft/shared/${draftRow.id}`,
+      draft: mapStoredDraft(
+        draftRow,
+        documentRows,
+        ownerAccess
+          ? currentAccessFor(draftId, ownerAccess.definition, ownerAccess.token)
+          : undefined,
+      ),
+      accessLinks,
+      workspaceUrl: accessLinks[0]?.url ?? `/proposals/shared/${draftRow.id}`,
+      previewUrl: accessLinks[1]?.url ?? `/draft/shared/${draftRow.id}`,
     },
     201,
   );

@@ -4,11 +4,14 @@ import { readConfiguredSharedDraft } from "@/lib/reach-consensus/shared-draft-re
 
 export default async function SharedDraftMicrositePreviewPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ draftId: string }>;
+  searchParams: Promise<{ access?: string }>;
 }) {
   const { draftId } = await params;
-  const draft = await readConfiguredSharedDraft(draftId);
+  const { access } = await searchParams;
+  const draft = await readConfiguredSharedDraft(draftId, access, "preview:read");
 
   if (!draft) {
     notFound();

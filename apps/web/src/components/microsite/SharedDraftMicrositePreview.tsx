@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { SharedDraftProposal } from "@/lib/reach-consensus/shared-drafts";
 
 export function SharedDraftMicrositePreview({ draft }: { draft: SharedDraftProposal }) {
+  const workspaceUrl = draft.currentAccess?.workspaceUrl;
+
   return (
     <main className="min-h-screen bg-[#f7f9fc] text-[#17202a]">
       <header className="border-b border-[#d9e0e8] bg-white">
@@ -16,13 +18,20 @@ export function SharedDraftMicrositePreview({ draft }: { draft: SharedDraftPropo
             <p className="mt-3 max-w-4xl text-sm leading-6 text-[#657180]">
               {draft.oneCiscoStory}
             </p>
+            {draft.currentAccess ? (
+              <p className="mt-3 inline-flex rounded-md border border-[#c8d9ee] bg-[#f7f9fc] px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-[#0b66c3]">
+                {draft.currentAccess.label}
+              </p>
+            ) : null}
           </div>
-          <Link
-            href={`/proposals/shared/${draft.id}`}
-            className="inline-flex min-h-10 items-center rounded-md border border-[#c8d9ee] bg-[#f7f9fc] px-4 text-sm font-extrabold text-[#0b66c3]"
-          >
-            Back to workspace
-          </Link>
+          {workspaceUrl ? (
+            <Link
+              href={workspaceUrl}
+              className="inline-flex min-h-10 items-center rounded-md border border-[#c8d9ee] bg-[#f7f9fc] px-4 text-sm font-extrabold text-[#0b66c3]"
+            >
+              Back to workspace
+            </Link>
+          ) : null}
         </div>
       </header>
       <div className="mx-auto grid max-w-7xl gap-6 px-6 py-6 lg:grid-cols-[260px_1fr]">

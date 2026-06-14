@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { SharedDraftProposal } from "@/lib/reach-consensus/shared-drafts";
 
 export function SharedDraftWorkspaceView({ draft }: { draft: SharedDraftProposal }) {
+  const previewUrl = draft.currentAccess?.previewUrl ?? `/draft/shared/${draft.id}`;
+
   return (
     <div className="grid gap-5">
       <section className="rounded-lg border border-[#d9e0e8] bg-white p-6 shadow-sm">
@@ -12,9 +14,14 @@ export function SharedDraftWorkspaceView({ draft }: { draft: SharedDraftProposal
             </p>
             <h1 className="mt-2 text-3xl font-bold">{draft.title}</h1>
             <p className="mt-2 text-sm font-bold text-[#657180]">{draft.customerName}</p>
+            {draft.currentAccess ? (
+              <p className="mt-3 inline-flex rounded-md border border-[#c8d9ee] bg-[#f7f9fc] px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-[#0b66c3]">
+                {draft.currentAccess.label}
+              </p>
+            ) : null}
           </div>
           <Link
-            href={`/draft/shared/${draft.id}`}
+            href={previewUrl}
             className="inline-flex min-h-10 items-center rounded-md bg-[#0b66c3] px-4 text-sm font-extrabold text-white"
           >
             Customer preview

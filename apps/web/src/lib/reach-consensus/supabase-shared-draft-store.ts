@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   mapSharedDraftRows,
+  type SharedDraftAccessTokenRow,
   type SharedDraftDocumentRow,
   type SharedDraftReadStore,
   type SharedDraftRow,
@@ -39,6 +40,14 @@ export class SupabaseSharedDraftStore implements SharedDraftStore, SharedDraftRe
 
   async insertDraft(row: SharedDraftRow) {
     const { error } = await this.supabase.from("proposal_intake_drafts").insert(row);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  async insertAccessTokens(rows: SharedDraftAccessTokenRow[]) {
+    const { error } = await this.supabase.from("proposal_intake_access_tokens").insert(rows);
 
     if (error) {
       throw new Error(error.message);
@@ -99,6 +108,32 @@ export class SupabaseSharedDraftStore implements SharedDraftStore, SharedDraftRe
       draft: asSharedDraftRow(draft),
       documents: documents ?? [],
     };
+  }
+
+  async getAccessToken(draftId: string, tokenHash: string) {
+    const { data, error } = await this.supabase
+      .from("proposal_intake_access_tokens")
+      .select("*")
+      .eq("draft_id", draftId)
+      .eq("token_hash", tokenHash)
+      .maybeSingle<SharedDraftAccessTokenRow>();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return data ?? undefined;
+  }
+
+  async markAccessTokenUsed(tokenId: string, usedAt: string) {
+    const { error } = await this.supabase
+      .from("proposal_intake_access_tokens")
+      .update({ last_used_at: usedAt })
+      .eq("id", tokenId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
   }
 
   async getDraft(draftId: string) {

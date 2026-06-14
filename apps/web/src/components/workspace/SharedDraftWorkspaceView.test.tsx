@@ -37,6 +37,16 @@ const sharedDraft: SharedDraftProposal = {
       uploadStatus: "uploaded",
     },
   ],
+  currentAccess: {
+    token: "owner-token",
+    role: "owner",
+    label: "Cisco workspace",
+    capabilities: ["workspace:read", "workspace:write", "preview:read"],
+    workspaceUrl:
+      "/proposals/shared/5d4d6d1b-5f66-4e9d-8ffc-a25592f54a8e?access=owner-token",
+    previewUrl:
+      "/draft/shared/5d4d6d1b-5f66-4e9d-8ffc-a25592f54a8e?access=owner-token",
+  },
   createdAt: "2026-06-13T16:00:00.000Z",
   updatedAt: "2026-06-13T16:00:00.000Z",
 };
@@ -49,9 +59,10 @@ describe("SharedDraftWorkspaceView", () => {
       screen.getByRole("heading", { name: "AI Secure Access Platform" }),
     ).toBeInTheDocument();
     expect(screen.getByText("future-state.pdf")).toBeInTheDocument();
+    expect(screen.getByText("Cisco workspace")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Customer preview" })).toHaveAttribute(
       "href",
-      `/draft/shared/${sharedDraft.id}`,
+      `/draft/shared/${sharedDraft.id}?access=owner-token`,
     );
   });
 });

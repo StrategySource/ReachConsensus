@@ -5,11 +5,14 @@ import { readConfiguredSharedDraft } from "@/lib/reach-consensus/shared-draft-re
 
 export default async function SharedDraftWorkspacePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ draftId: string }>;
+  searchParams: Promise<{ access?: string }>;
 }) {
   const { draftId } = await params;
-  const draft = await readConfiguredSharedDraft(draftId);
+  const { access } = await searchParams;
+  const draft = await readConfiguredSharedDraft(draftId, access, "workspace:read");
 
   if (!draft) {
     notFound();
