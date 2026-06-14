@@ -46,11 +46,12 @@ The first AI implementation is deterministic and testable. It drafts proposal co
 - Create: `apps/web/package.json`
 - Create: `apps/web/src/app/layout.tsx`
 - Create: `apps/web/src/app/page.tsx`
+- Create: `apps/web/src/app/page.test.tsx`
 - Create: `apps/web/src/app/globals.css`
 - Create: `apps/web/vitest.config.ts`
 - Create: `apps/web/src/test/setup.ts`
 
-- [ ] **Step 1: Create the Next.js application**
+- [x] **Step 1: Create the Next.js application**
 
 Run:
 
@@ -60,7 +61,7 @@ npx create-next-app@latest apps/web --yes --typescript --tailwind --eslint --app
 
 Expected: `apps/web` exists with a Next.js App Router application.
 
-- [ ] **Step 2: Install test dependencies**
+- [x] **Step 2: Install test dependencies**
 
 Run:
 
@@ -71,7 +72,7 @@ npm install -D vitest @vitejs/plugin-react jsdom @testing-library/react @testing
 
 Expected: dependencies are added to `apps/web/package.json`.
 
-- [ ] **Step 3: Replace `apps/web/package.json` scripts**
+- [x] **Step 3: Replace `apps/web/package.json` scripts**
 
 Modify the `scripts` block in `apps/web/package.json`:
 
@@ -88,7 +89,7 @@ Modify the `scripts` block in `apps/web/package.json`:
 }
 ```
 
-- [ ] **Step 4: Add Vitest configuration**
+- [x] **Step 4: Add Vitest configuration**
 
 Create `apps/web/vitest.config.ts`:
 
@@ -117,7 +118,7 @@ Create `apps/web/src/test/setup.ts`:
 import "@testing-library/jest-dom/vitest";
 ```
 
-- [ ] **Step 5: Create the root app shell**
+- [x] **Step 5: Create the root app shell**
 
 Replace `apps/web/src/app/layout.tsx`:
 
@@ -161,6 +162,26 @@ export default function HomePage() {
     </main>
   );
 }
+```
+
+Create `apps/web/src/app/page.test.tsx`:
+
+```tsx
+import { render, screen } from "@testing-library/react";
+import HomePage from "./page";
+
+describe("HomePage", () => {
+  it("renders the Reach Consensus entry page", () => {
+    render(<HomePage />);
+
+    expect(
+      screen.getByRole("heading", { name: "Reach Consensus" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Open dashboard" }),
+    ).toHaveAttribute("href", "/dashboard");
+  });
+});
 ```
 
 Replace `apps/web/src/app/globals.css`:
@@ -247,7 +268,7 @@ a {
 }
 ```
 
-- [ ] **Step 6: Verify scaffold**
+- [x] **Step 6: Verify scaffold**
 
 Run:
 
@@ -259,7 +280,7 @@ npm run build
 
 Expected: both commands pass.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 Run:
 
@@ -276,7 +297,7 @@ git commit -m "feat: scaffold Reach Consensus web app"
 - Create: `apps/web/src/lib/reach-consensus/types.ts`
 - Create: `apps/web/src/lib/reach-consensus/types.test.ts`
 
-- [ ] **Step 1: Write the failing type behavior test**
+- [x] **Step 1: Write the failing type behavior test**
 
 Create `apps/web/src/lib/reach-consensus/types.test.ts`:
 
@@ -304,7 +325,7 @@ describe("proposal section visibility", () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -315,7 +336,7 @@ npm run test -- src/lib/reach-consensus/types.test.ts
 
 Expected: FAIL because `./types` does not exist.
 
-- [ ] **Step 3: Create the domain model**
+- [x] **Step 3: Create the domain model**
 
 Create `apps/web/src/lib/reach-consensus/types.ts`:
 
@@ -453,7 +474,7 @@ export function visibleSectionsForCustomer<T extends SectionLike>(sections: T[])
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run:
 
@@ -464,7 +485,7 @@ npm run test -- src/lib/reach-consensus/types.test.ts
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 Run:
 
@@ -482,7 +503,7 @@ git commit -m "feat: define proposal domain model"
 - Create: `apps/web/src/lib/reach-consensus/repository.ts`
 - Create: `apps/web/src/lib/reach-consensus/repository.test.ts`
 
-- [ ] **Step 1: Write the failing repository test**
+- [x] **Step 1: Write the failing repository test**
 
 Create `apps/web/src/lib/reach-consensus/repository.test.ts`:
 
@@ -512,7 +533,7 @@ describe("fixture repository", () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -523,7 +544,7 @@ npm run test -- src/lib/reach-consensus/repository.test.ts
 
 Expected: FAIL because `./repository` does not exist.
 
-- [ ] **Step 3: Add fixture proposal data**
+- [x] **Step 3: Add fixture proposal data**
 
 Create `apps/web/src/lib/reach-consensus/fixtures.ts`:
 
@@ -623,7 +644,7 @@ export const starterProposal: Proposal = {
 };
 ```
 
-- [ ] **Step 4: Add repository implementation**
+- [x] **Step 4: Add repository implementation**
 
 Create `apps/web/src/lib/reach-consensus/repository.ts`:
 
@@ -726,7 +747,7 @@ export function createFixtureRepository(initialProposal: Proposal = starterPropo
 export const proposalRepository = createFixtureRepository();
 ```
 
-- [ ] **Step 5: Run test to verify it passes**
+- [x] **Step 5: Run test to verify it passes**
 
 Run:
 
@@ -737,7 +758,7 @@ npm run test -- src/lib/reach-consensus/repository.test.ts
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 Run:
 
@@ -758,7 +779,7 @@ git commit -m "feat: add proposal fixture repository"
 - Create: `apps/web/src/app/(workspace)/proposals/[proposalId]/page.tsx`
 - Test: `apps/web/src/components/workspace/WorkspaceOverview.test.tsx`
 
-- [ ] **Step 1: Write the failing workspace overview test**
+- [x] **Step 1: Write the failing workspace overview test**
 
 Create `apps/web/src/components/workspace/WorkspaceOverview.test.tsx`:
 
@@ -776,12 +797,12 @@ describe("WorkspaceOverview", () => {
     expect(screen.getByText(/one cisco story/i)).toBeInTheDocument();
     expect(screen.getByText(/3 sections/i)).toBeInTheDocument();
     expect(screen.getByText(/2 assets/i)).toBeInTheDocument();
-    expect(screen.getByText(/needs review/i)).toBeInTheDocument();
+    expect(screen.getByText(/^1 needs review$/i)).toBeInTheDocument();
   });
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -792,7 +813,7 @@ npm run test -- src/components/workspace/WorkspaceOverview.test.tsx
 
 Expected: FAIL because `WorkspaceOverview` does not exist.
 
-- [ ] **Step 3: Create internal workspace components**
+- [x] **Step 3: Create internal workspace components**
 
 Create `apps/web/src/components/workspace/AppFrame.tsx`:
 
@@ -886,7 +907,7 @@ export function WorkspaceOverview({ proposal }: { proposal: Proposal }) {
 }
 ```
 
-- [ ] **Step 4: Create workspace routes**
+- [x] **Step 4: Create workspace routes**
 
 Create `apps/web/src/app/(workspace)/dashboard/page.tsx`:
 
@@ -934,7 +955,7 @@ export default async function ProposalWorkspacePage({ params }: { params: Promis
 }
 ```
 
-- [ ] **Step 5: Run test and build**
+- [x] **Step 5: Run test and build**
 
 Run:
 
@@ -946,7 +967,7 @@ npm run build
 
 Expected: test and build pass.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 Run:
 
@@ -964,7 +985,7 @@ git commit -m "feat: add internal proposal workspace"
 - Create: `apps/web/src/components/workspace/SetupChecklist.test.tsx`
 - Create: `apps/web/src/app/(workspace)/proposals/[proposalId]/setup/page.tsx`
 
-- [ ] **Step 1: Write the failing setup checklist test**
+- [x] **Step 1: Write the failing setup checklist test**
 
 Create `apps/web/src/components/workspace/SetupChecklist.test.tsx`:
 
@@ -980,14 +1001,18 @@ describe("SetupChecklist", () => {
 
     expect(screen.getByText("Executive Summary")).toBeInTheDocument();
     expect(screen.getByText("Platform Story")).toBeInTheDocument();
-    expect(screen.getByText("Cisco")).toBeInTheDocument();
+    expect(screen.getByText("Dana Roberts")).toBeInTheDocument();
+    expect(screen.getByText("Jordan Lee")).toBeInTheDocument();
+    expect(screen.getByText("Casey Morgan")).toBeInTheDocument();
+    expect(screen.getByText("Riley Chen")).toBeInTheDocument();
+    expect(screen.getAllByText("Cisco")).toHaveLength(2);
     expect(screen.getByText("PartnerCo")).toBeInTheDocument();
     expect(screen.getByText("Acme Health")).toBeInTheDocument();
   });
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -998,7 +1023,7 @@ npm run test -- src/components/workspace/SetupChecklist.test.tsx
 
 Expected: FAIL because `SetupChecklist` does not exist.
 
-- [ ] **Step 3: Create setup checklist component**
+- [x] **Step 3: Create setup checklist component**
 
 Create `apps/web/src/components/workspace/SetupChecklist.tsx`:
 
@@ -1042,7 +1067,7 @@ export function SetupChecklist({ proposal }: { proposal: Proposal }) {
 }
 ```
 
-- [ ] **Step 4: Create setup route**
+- [x] **Step 4: Create setup route**
 
 Create `apps/web/src/app/(workspace)/proposals/[proposalId]/setup/page.tsx`:
 
@@ -1068,7 +1093,7 @@ export default async function ProposalSetupPage({ params }: { params: Promise<{ 
 }
 ```
 
-- [ ] **Step 5: Run test and build**
+- [x] **Step 5: Run test and build**
 
 Run:
 
@@ -1080,7 +1105,7 @@ npm run build
 
 Expected: test and build pass.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 Run:
 
@@ -1099,7 +1124,7 @@ git commit -m "feat: add guided proposal setup"
 - Create: `apps/web/src/lib/reach-consensus/publish-service.ts`
 - Create: `apps/web/src/lib/reach-consensus/publish-service.test.ts`
 
-- [ ] **Step 1: Write failing AI draft service test**
+- [x] **Step 1: Write failing AI draft service test**
 
 Create `apps/web/src/lib/reach-consensus/ai-draft-service.test.ts`:
 
@@ -1120,7 +1145,7 @@ describe("draftOneCiscoNarrative", () => {
 });
 ```
 
-- [ ] **Step 2: Write failing publish rules test**
+- [x] **Step 2: Write failing publish rules test**
 
 Create `apps/web/src/lib/reach-consensus/publish-service.test.ts`:
 
@@ -1146,7 +1171,7 @@ describe("publish-service", () => {
 });
 ```
 
-- [ ] **Step 3: Run tests to verify they fail**
+- [x] **Step 3: Run tests to verify they fail**
 
 Run:
 
@@ -1157,7 +1182,7 @@ npm run test -- src/lib/reach-consensus/ai-draft-service.test.ts src/lib/reach-c
 
 Expected: FAIL because the services do not exist.
 
-- [ ] **Step 4: Create AI draft service**
+- [x] **Step 4: Create AI draft service**
 
 Create `apps/web/src/lib/reach-consensus/ai-draft-service.ts`:
 
@@ -1181,7 +1206,7 @@ export function draftOneCiscoNarrative(proposal: Proposal): ContentBlock {
 }
 ```
 
-- [ ] **Step 5: Create publish rules service**
+- [x] **Step 5: Create publish rules service**
 
 Create `apps/web/src/lib/reach-consensus/publish-service.ts`:
 
@@ -1197,7 +1222,7 @@ export function publishableSections(sections: ProposalSection[]) {
 }
 ```
 
-- [ ] **Step 6: Run tests**
+- [x] **Step 6: Run tests**
 
 Run:
 
@@ -1208,7 +1233,7 @@ npm run test -- src/lib/reach-consensus/ai-draft-service.test.ts src/lib/reach-c
 
 Expected: PASS.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 Run:
 
@@ -1226,7 +1251,7 @@ git commit -m "feat: add AI drafting and publish rules"
 - Create: `apps/web/src/components/microsite/MicrositeView.test.tsx`
 - Create: `apps/web/src/app/(microsite)/p/[slug]/page.tsx`
 
-- [ ] **Step 1: Write failing microsite test**
+- [x] **Step 1: Write failing microsite test**
 
 Create `apps/web/src/components/microsite/MicrositeView.test.tsx`:
 
@@ -1247,15 +1272,17 @@ describe("MicrositeView", () => {
 
     render(<MicrositeView proposal={publishedProposal} />);
 
-    expect(screen.getByText("Executive Summary")).toBeInTheDocument();
-    expect(screen.getByText("Platform Story")).toBeInTheDocument();
-    expect(screen.queryByText("Services")).not.toBeInTheDocument();
-    expect(screen.getByText(/compounding platform value/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Executive Summary" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Platform Story" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Services" })).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /compounding platform value/i }),
+    ).toBeInTheDocument();
   });
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -1266,7 +1293,7 @@ npm run test -- src/components/microsite/MicrositeView.test.tsx
 
 Expected: FAIL because `MicrositeView` does not exist.
 
-- [ ] **Step 3: Create microsite component**
+- [x] **Step 3: Create microsite component**
 
 Create `apps/web/src/components/microsite/MicrositeView.tsx`:
 
@@ -1323,7 +1350,7 @@ export function MicrositeView({ proposal }: { proposal: Proposal }) {
 }
 ```
 
-- [ ] **Step 4: Create microsite route**
+- [x] **Step 4: Create microsite route**
 
 Create `apps/web/src/app/(microsite)/p/[slug]/page.tsx`:
 
@@ -1351,7 +1378,7 @@ export default async function CustomerMicrositePage({ params }: { params: Promis
 }
 ```
 
-- [ ] **Step 5: Run test and build**
+- [x] **Step 5: Run test and build**
 
 Run:
 
@@ -1363,7 +1390,7 @@ npm run build
 
 Expected: test and build pass.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 Run:
 
@@ -1381,8 +1408,9 @@ git commit -m "feat: add customer proposal microsite"
 - Create: `apps/web/src/lib/reach-consensus/feedback-service.test.ts`
 - Create: `apps/web/src/components/workspace/FeedbackPanel.tsx`
 - Create: `apps/web/src/components/workspace/FeedbackPanel.test.tsx`
+- Modify: `apps/web/src/lib/reach-consensus/fixtures.ts`
 
-- [ ] **Step 1: Write failing feedback service test**
+- [x] **Step 1: Write failing feedback service test**
 
 Create `apps/web/src/lib/reach-consensus/feedback-service.test.ts`:
 
@@ -1408,7 +1436,7 @@ describe("feedback-service", () => {
 });
 ```
 
-- [ ] **Step 2: Write failing feedback panel test**
+- [x] **Step 2: Write failing feedback panel test**
 
 Create `apps/web/src/components/workspace/FeedbackPanel.test.tsx`:
 
@@ -1447,13 +1475,22 @@ describe("FeedbackPanel", () => {
 
     render(<FeedbackPanel proposal={proposal} />);
 
-    expect(screen.getByText("Please clarify services ownership.")).toBeInTheDocument();
+    expect(screen.getAllByText("Please clarify services ownership.")).toHaveLength(2);
+    expect(screen.getByText("Clarify customer feedback")).toBeInTheDocument();
+  });
+
+  it("shows seeded starter proposal feedback", () => {
+    render(<FeedbackPanel proposal={starterProposal} />);
+
+    expect(
+      screen.getAllByText("Please clarify which team owns advanced configuration."),
+    ).toHaveLength(2);
     expect(screen.getByText("Clarify customer feedback")).toBeInTheDocument();
   });
 });
 ```
 
-- [ ] **Step 3: Run tests to verify they fail**
+- [x] **Step 3: Run tests to verify they fail**
 
 Run:
 
@@ -1464,7 +1501,7 @@ npm run test -- src/lib/reach-consensus/feedback-service.test.ts src/components/
 
 Expected: FAIL because feedback files do not exist.
 
-- [ ] **Step 4: Create feedback service**
+- [x] **Step 4: Create feedback service**
 
 Create `apps/web/src/lib/reach-consensus/feedback-service.ts`:
 
@@ -1492,7 +1529,7 @@ export function createChangeRequestFromComment(input: CommentConversionInput): C
 }
 ```
 
-- [ ] **Step 5: Create feedback panel**
+- [x] **Step 5: Create feedback panel**
 
 Create `apps/web/src/components/workspace/FeedbackPanel.tsx`:
 
@@ -1532,7 +1569,7 @@ export function FeedbackPanel({ proposal }: { proposal: Proposal }) {
 }
 ```
 
-- [ ] **Step 6: Add `FeedbackPanel` to workspace page**
+- [x] **Step 6: Add `FeedbackPanel` to workspace page**
 
 Modify `apps/web/src/app/(workspace)/proposals/[proposalId]/page.tsx`:
 
@@ -1562,7 +1599,35 @@ export default async function ProposalWorkspacePage({ params }: { params: Promis
 }
 ```
 
-- [ ] **Step 7: Run tests and build**
+- [x] **Step 7: Seed starter proposal feedback**
+
+Update `apps/web/src/lib/reach-consensus/fixtures.ts` so `starterProposal` includes a realistic customer comment and matching change request tied to `section_services`:
+
+```ts
+comments: [
+  {
+    id: "comment_services_owner",
+    sectionId: "section_services",
+    authorName: "Riley Chen",
+    authorRole: "customer_commenter",
+    body: "Please clarify which team owns advanced configuration.",
+    createdAt: "2026-06-09T12:00:00.000Z",
+  },
+],
+changeRequests: [
+  {
+    id: "cr_comment_services_owner",
+    sectionId: "section_services",
+    title: "Clarify customer feedback",
+    body: "Please clarify which team owns advanced configuration.",
+    ownerName: "Jordan Lee",
+    status: "open",
+    dueDate: "2026-06-15",
+  },
+],
+```
+
+- [x] **Step 8: Run tests and build**
 
 Run:
 
@@ -1574,12 +1639,12 @@ npm run build
 
 Expected: tests and build pass.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 9: Commit**
 
 Run:
 
 ```bash
-git add apps/web/src/lib/reach-consensus/feedback-service.ts apps/web/src/lib/reach-consensus/feedback-service.test.ts apps/web/src/components/workspace/FeedbackPanel.tsx apps/web/src/components/workspace/FeedbackPanel.test.tsx apps/web/src/app
+git add apps/web/src/lib/reach-consensus/feedback-service.ts apps/web/src/lib/reach-consensus/feedback-service.test.ts apps/web/src/lib/reach-consensus/fixtures.ts apps/web/src/components/workspace/FeedbackPanel.tsx apps/web/src/components/workspace/FeedbackPanel.test.tsx apps/web/src/app
 git commit -m "feat: add customer feedback tracking"
 ```
 
@@ -1592,8 +1657,9 @@ git commit -m "feat: add customer feedback tracking"
 - Create: `apps/web/src/lib/reach-consensus/analytics-service.test.ts`
 - Create: `apps/web/src/components/workspace/ActivityTimeline.tsx`
 - Create: `apps/web/src/components/workspace/ActivityTimeline.test.tsx`
+- Update: `apps/web/src/lib/reach-consensus/fixtures.ts`
 
-- [ ] **Step 1: Write failing analytics service test**
+- [x] **Step 1: Write failing analytics service test**
 
 Create `apps/web/src/lib/reach-consensus/analytics-service.test.ts`:
 
@@ -1629,7 +1695,7 @@ describe("analytics-service", () => {
 });
 ```
 
-- [ ] **Step 2: Write failing activity timeline test**
+- [x] **Step 2: Write failing activity timeline test**
 
 Create `apps/web/src/components/workspace/ActivityTimeline.test.tsx`:
 
@@ -1660,7 +1726,7 @@ describe("ActivityTimeline", () => {
 });
 ```
 
-- [ ] **Step 3: Run tests to verify they fail**
+- [x] **Step 3: Run tests to verify they fail**
 
 Run:
 
@@ -1671,7 +1737,7 @@ npm run test -- src/lib/reach-consensus/analytics-service.test.ts src/components
 
 Expected: FAIL because analytics files do not exist.
 
-- [ ] **Step 4: Create analytics service**
+- [x] **Step 4: Create analytics service**
 
 Create `apps/web/src/lib/reach-consensus/analytics-service.ts`:
 
@@ -1694,7 +1760,7 @@ export function summarizeEngagement(events: AnalyticsEvent[]) {
 }
 ```
 
-- [ ] **Step 5: Create activity timeline component**
+- [x] **Step 5: Create activity timeline component**
 
 Create `apps/web/src/components/workspace/ActivityTimeline.tsx`:
 
@@ -1710,7 +1776,7 @@ export function ActivityTimeline({ events }: { events: AnalyticsEvent[] }) {
           <div key={event.id} className="rounded-lg bg-[#f7f9fc] p-4">
             <strong>{event.actorName}</strong>
             <p className="mt-1 text-sm text-[#657180]">{event.label}</p>
-            <p className="mt-2 text-xs font-bold uppercase tracking-wide text-[#0b66c3]">{event.type.replace("_", " ")}</p>
+            <p className="mt-2 text-xs font-bold uppercase tracking-wide text-[#0b66c3]">{event.type.replaceAll("_", " ")}</p>
           </div>
         ))}
       </div>
@@ -1719,7 +1785,32 @@ export function ActivityTimeline({ events }: { events: AnalyticsEvent[] }) {
 }
 ```
 
-- [ ] **Step 6: Add `ActivityTimeline` to workspace page**
+- [x] **Step 5a: Seed fixture engagement events**
+
+Update `apps/web/src/lib/reach-consensus/fixtures.ts` so `starterProposal.analyticsEvents` contains realistic customer engagement activity:
+
+```ts
+analyticsEvents: [
+  {
+    id: "event_exec_view",
+    proposalId: "proposal_acme",
+    actorName: "Riley Chen",
+    type: "section_viewed",
+    label: "Viewed Executive Summary",
+    occurredAt: "2026-06-09T12:05:00.000Z",
+  },
+  {
+    id: "event_bom_download",
+    proposalId: "proposal_acme",
+    actorName: "Riley Chen",
+    type: "file_downloaded",
+    label: "Downloaded Approved bill of materials.xlsx",
+    occurredAt: "2026-06-09T12:08:00.000Z",
+  },
+],
+```
+
+- [x] **Step 6: Add `ActivityTimeline` to workspace page**
 
 Modify `apps/web/src/app/(workspace)/proposals/[proposalId]/page.tsx`:
 
@@ -1751,7 +1842,7 @@ export default async function ProposalWorkspacePage({ params }: { params: Promis
 }
 ```
 
-- [ ] **Step 7: Run tests and build**
+- [x] **Step 7: Run tests and build**
 
 Run:
 
@@ -1763,7 +1854,7 @@ npm run build
 
 Expected: tests and build pass.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 Run:
 
@@ -1781,7 +1872,7 @@ git commit -m "feat: add proposal engagement timeline"
 - Create: `apps/web/src/lib/reach-consensus/supabase-adapter.ts`
 - Create: `apps/web/src/lib/reach-consensus/supabase-adapter.test.ts`
 
-- [ ] **Step 1: Write failing adapter mapping test**
+- [x] **Step 1: Write failing adapter mapping test**
 
 Create `apps/web/src/lib/reach-consensus/supabase-adapter.test.ts`:
 
@@ -1812,7 +1903,7 @@ describe("supabase-adapter", () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run:
 
@@ -1823,7 +1914,7 @@ npm run test -- src/lib/reach-consensus/supabase-adapter.test.ts
 
 Expected: FAIL because `supabase-adapter` does not exist.
 
-- [ ] **Step 3: Create initial Supabase migration**
+- [x] **Step 3: Create initial Supabase migration**
 
 Create `supabase/migrations/202606090001_initial_reach_consensus.sql`:
 
@@ -2138,7 +2229,7 @@ create index change_requests_proposal_id_idx on public.change_requests(proposal_
 create index analytics_events_proposal_id_occurred_at_idx on public.analytics_events(proposal_id, occurred_at desc);
 ```
 
-- [ ] **Step 4: Create Supabase adapter boundary**
+- [x] **Step 4: Create Supabase adapter boundary**
 
 Create `apps/web/src/lib/reach-consensus/supabase-adapter.ts`:
 
@@ -2164,7 +2255,7 @@ export function mapProposalRow(row: ProposalRow) {
 }
 ```
 
-- [ ] **Step 5: Run test**
+- [x] **Step 5: Run test**
 
 Run:
 
@@ -2175,7 +2266,7 @@ npm run test -- src/lib/reach-consensus/supabase-adapter.test.ts
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 Run:
 
@@ -2191,7 +2282,7 @@ git commit -m "feat: add Supabase schema boundary"
 **Files:**
 - Modify: `docs/superpowers/plans/2026-06-09-reach-consensus-v1-foundation.md`
 
-- [ ] **Step 1: Run full test suite**
+- [x] **Step 1: Run full test suite**
 
 Run:
 
@@ -2202,7 +2293,7 @@ npm run test
 
 Expected: all tests pass.
 
-- [ ] **Step 2: Run production build**
+- [x] **Step 2: Run production build**
 
 Run:
 
@@ -2213,7 +2304,7 @@ npm run build
 
 Expected: build completes successfully and produces a Next.js production build.
 
-- [ ] **Step 3: Run local app**
+- [x] **Step 3: Run local app**
 
 Run:
 
@@ -2224,7 +2315,7 @@ npm run dev
 
 Expected: the app starts on a local port and shows the Reach Consensus entry page.
 
-- [ ] **Step 4: Verify routes in browser**
+- [x] **Step 4: Verify routes in browser**
 
 Open these routes:
 
@@ -2238,7 +2329,7 @@ Open these routes:
 
 Expected: each route renders without console errors. The customer microsite shows approved/published content only.
 
-- [ ] **Step 5: Commit verification note if plan checkboxes were updated**
+- [x] **Step 5: Commit verification note if plan checkboxes were updated**
 
 Run:
 

@@ -1,0 +1,159 @@
+import type { Proposal } from "./types";
+
+export const starterProposal: Proposal = {
+  id: "proposal_acme",
+  slug: "acme-health-ai-ready-network",
+  customerName: "Acme Health",
+  title: "Secure AI-Ready Network Transformation",
+  opportunitySummary:
+    "Acme Health wants to modernize network, security, and operations capabilities before expanding AI-enabled clinical workflows.",
+  oneCiscoStory:
+    "Cisco Secure Access, modern networking, observability, services, licensing, and operational readiness combine into a platform architecture that lowers delivery risk and accelerates value.",
+  members: [
+    { id: "m_ae", name: "Dana Roberts", organization: "Cisco", role: "workspace_owner" },
+    { id: "m_se", name: "Jordan Lee", organization: "Cisco", role: "cisco_contributor" },
+    { id: "m_partner", name: "Casey Morgan", organization: "PartnerCo", role: "partner_contributor" },
+    { id: "m_customer", name: "Riley Chen", organization: "Acme Health", role: "customer_commenter" },
+  ],
+  assets: [
+    {
+      id: "asset_arch",
+      name: "Current-state network diagram.pdf",
+      fileType: "pdf",
+      visibility: "source_material",
+      digestStatus: "digested",
+      customerDownloadEnabled: false,
+    },
+    {
+      id: "asset_bom",
+      name: "Approved bill of materials.xlsx",
+      fileType: "spreadsheet",
+      visibility: "published_asset",
+      digestStatus: "digested",
+      customerDownloadEnabled: true,
+    },
+  ],
+  sections: [
+    {
+      id: "section_exec",
+      title: "Executive Summary",
+      slug: "executive-summary",
+      status: "approved",
+      ownerName: "Dana Roberts",
+      summary: "CIO-level case for transformation.",
+      blocks: [
+        {
+          id: "block_exec_story",
+          type: "narrative",
+          title: "Why now",
+          body: "Acme Health can reduce operational risk and create an AI-ready foundation by aligning network, security, and operations around one Cisco architecture.",
+          sourceAssetIds: ["asset_arch"],
+        },
+      ],
+    },
+    {
+      id: "section_platform",
+      title: "Platform Story",
+      slug: "platform-story",
+      status: "approved",
+      ownerName: "Jordan Lee",
+      summary: "One Cisco platform spine.",
+      blocks: [
+        {
+          id: "block_platform_formula",
+          type: "infographic",
+          title: "1+1=3 platform value",
+          body: "Secure access plus modern networking plus operations visibility creates compounding platform value.",
+          sourceAssetIds: ["asset_arch", "asset_bom"],
+        },
+      ],
+    },
+    {
+      id: "section_services",
+      title: "Services",
+      slug: "services",
+      status: "needs_review",
+      ownerName: "Casey Morgan",
+      summary: "Cisco recommended value delivery path.",
+      blocks: [
+        {
+          id: "block_services_map",
+          type: "services_map",
+          title: "Delivery responsibility map",
+          body: "Cisco Advanced Services owns design validation, PartnerCo owns advanced configuration, the traditional partner owns rack and stack, and Acme Health owns stakeholder readiness.",
+          sourceAssetIds: [],
+        },
+      ],
+    },
+  ],
+  comments: [
+    {
+      id: "comment_services_owner",
+      sectionId: "section_services",
+      authorName: "Riley Chen",
+      authorRole: "customer_commenter",
+      body: "Please clarify which team owns advanced configuration.",
+      createdAt: "2026-06-09T12:00:00.000Z",
+    },
+  ],
+  changeRequests: [
+    {
+      id: "cr_comment_services_owner",
+      sectionId: "section_services",
+      title: "Clarify customer feedback",
+      body: "Please clarify which team owns advanced configuration.",
+      ownerName: "Jordan Lee",
+      status: "open",
+      dueDate: "2026-06-15",
+    },
+  ],
+  analyticsEvents: [
+    {
+      id: "event_exec_view",
+      proposalId: "proposal_acme",
+      actorName: "Riley Chen",
+      type: "section_viewed",
+      label: "Viewed Executive Summary",
+      occurredAt: "2026-06-09T12:05:00.000Z",
+    },
+    {
+      id: "event_bom_download",
+      proposalId: "proposal_acme",
+      actorName: "Riley Chen",
+      type: "file_downloaded",
+      label: "Downloaded Approved bill of materials.xlsx",
+      occurredAt: "2026-06-09T12:08:00.000Z",
+    },
+  ],
+  publishedVersions: [],
+};
+
+export const publishedStarterProposal: Proposal = {
+  ...starterProposal,
+  publishedVersions: [
+    {
+      id: "version_1",
+      proposalId: starterProposal.id,
+      versionNumber: 1,
+      publishedAt: "2026-06-09T12:10:00.000Z",
+      publishedBy: "Dana Roberts",
+      snapshot: {
+        id: starterProposal.id,
+        slug: starterProposal.slug,
+        customerName: starterProposal.customerName,
+        title: starterProposal.title,
+        oneCiscoStory: starterProposal.oneCiscoStory,
+        sections: starterProposal.sections
+          .filter((section) => section.status === "approved")
+          .map((section) => ({
+            ...section,
+            status: "published",
+            blocks: section.blocks.map((block) => ({
+              ...block,
+              sourceAssetIds: [...block.sourceAssetIds],
+            })),
+          })),
+      },
+    },
+  ],
+};
